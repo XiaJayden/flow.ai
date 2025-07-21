@@ -9,12 +9,13 @@ import { SongsList } from "@/components/songs/songs-list";
 import { BandMembers } from "@/components/bands/band-members";
 
 interface BandPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function BandPage({ params }: BandPageProps) {
+  const resolvedParams = await params;
   const session = await getServerSession(authOptions);
   
   if (!session) {
@@ -26,7 +27,7 @@ export default async function BandPage({ params }: BandPageProps) {
     where: {
       userId_bandId: {
         userId: session.user.id,
-        bandId: params.id
+        bandId: resolvedParams.id
       }
     },
     include: {

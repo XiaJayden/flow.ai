@@ -112,6 +112,9 @@ prisma/                   # Database schema and migrations
 
 ## Development Notes
 
+### Debugging
+- Claude often is unable to independently judge if server is active. Claude should use curl commands to check if server is running.
+
 ### Database Considerations
 - SQLite doesn't support arrays, so instruments are stored as JSON strings
 - Use `parseInstruments()` and `stringifyInstruments()` utility functions

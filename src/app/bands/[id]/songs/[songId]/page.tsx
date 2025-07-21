@@ -7,13 +7,14 @@ import { parseInstruments } from "@/lib/utils";
 import { SongPracticePage } from "@/components/practice/song-practice-page";
 
 interface SongPageProps {
-  params: {
+  params: Promise<{
     id: string;
     songId: string;
-  };
+  }>;
 }
 
 export default async function SongPage({ params }: SongPageProps) {
+  const resolvedParams = await params;
   const session = await getServerSession(authOptions);
   
   if (!session) {
@@ -25,7 +26,7 @@ export default async function SongPage({ params }: SongPageProps) {
     where: {
       userId_bandId: {
         userId: session.user.id,
-        bandId: params.id
+        bandId: resolvedParams.id
       }
     }
   });
@@ -37,8 +38,8 @@ export default async function SongPage({ params }: SongPageProps) {
   // Get song with annotations and comments
   const song = await db.song.findFirst({
     where: {
-      id: params.songId,
-      bandId: params.id
+      id: resolvedParams.songId,
+      bandId: resolvedParams.id
     },
     include: {
       band: {
@@ -125,7 +126,7 @@ export default async function SongPage({ params }: SongPageProps) {
       song={songWithInstruments}
       userInstruments={userInstruments}
       availableInstruments={allBandInstruments}
-      bandId={params.id}
+      bandId={resolvedParams.id}
     />
   );
 }
