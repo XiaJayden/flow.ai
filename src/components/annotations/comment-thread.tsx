@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InstrumentAvatar } from '@/components/ui/instrument-avatar';
 import { CommentWithUser } from '@/types';
 import { Reply, Send } from 'lucide-react';
 
@@ -58,11 +58,11 @@ export function CommentThread({ annotationId, comments, onCommentAdded }: Commen
         <div className="space-y-2">
           {comments.map(comment => (
             <div key={comment.id} className="flex gap-2 text-sm">
-              <Avatar className="h-5 w-5 mt-0.5">
-                <AvatarFallback className="text-xs">
-                  {comment.user.username.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <InstrumentAvatar
+                instruments={comment.user.instruments}
+                fallbackText={comment.user.username.charAt(0).toUpperCase()}
+                className="h-5 w-5 mt-0.5"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-xs">{comment.user.username}</span>

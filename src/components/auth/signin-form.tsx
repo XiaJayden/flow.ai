@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function SignInForm() {
-  const [email, setEmail] = useState('')
+  const [emailOrUsername, setEmailOrUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -22,13 +22,13 @@ export function SignInForm() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        emailOrUsername,
         password,
         redirect: false,
       })
 
       if (result?.error) {
-        setError('Invalid email or password')
+        setError('Invalid email/username or password')
       } else {
         router.push('/dashboard')
       }
@@ -56,18 +56,18 @@ export function SignInForm() {
           )}
           
           <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email address
+            <label htmlFor="emailOrUsername" className="text-sm font-medium">
+              Email or Username
             </label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
+              id="emailOrUsername"
+              name="emailOrUsername"
+              type="text"
+              autoComplete="username"
               required
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email or username"
+              value={emailOrUsername}
+              onChange={(e) => setEmailOrUsername(e.target.value)}
             />
           </div>
           

@@ -10,16 +10,21 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        emailOrUsername: { label: 'Email or Username', type: 'text' },
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.emailOrUsername || !credentials?.password) {
           return null
         }
 
+        // Check if input is email (contains @) or username
+        const isEmail = credentials.emailOrUsername.includes('@')
+        
         const user = await db.user.findUnique({
-          where: { email: credentials.email }
+          where: isEmail 
+            ? { email: credentials.emailOrUsername }
+            : { username: credentials.emailOrUsername }
         })
 
         if (!user || !user.password) {
@@ -51,6 +56,13 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.username = user.username
+        // Fetch user data including instruments
+        const dbUser = await db.user.findUnique({
+          where: { id: user.id }
+        })
+        if (dbUser) {
+          token.instruments = dbUser.instruments
+        }
       }
       return token
     },
@@ -58,6 +70,7 @@ export const authOptions: NextAuthOptions = {
       if (token && token.sub) {
         session.user.id = token.sub
         session.user.username = token.username as string
+        ;(session.user as any).instruments = token.instruments as string
       }
       return session
     }

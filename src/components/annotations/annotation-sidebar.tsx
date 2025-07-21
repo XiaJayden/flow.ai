@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InstrumentAvatar } from '@/components/ui/instrument-avatar';
 import { Plus, MessageSquare, Filter } from 'lucide-react';
 import { formatTime } from '@/lib/utils';
 import { AnnotationWithDetails } from '@/types';
@@ -155,11 +155,11 @@ export function AnnotationSidebar({
                 {/* Annotation Header */}
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-xs">
-                        {annotation.user.username.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <InstrumentAvatar
+                      instruments={annotation.user.instruments}
+                      fallbackText={annotation.user.username.charAt(0).toUpperCase()}
+                      className="h-6 w-6"
+                    />
                     <span className="text-sm font-medium">{annotation.user.username}</span>
                     <Button
                       variant="ghost"
