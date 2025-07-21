@@ -14,19 +14,20 @@ interface SongsListProps {
   songs: Array<{
     id: string;
     title: string;
-    artist?: string;
+    artist?: string | null;
     youtubeId: string;
     duration: number;
-    thumbnail?: string;
+    thumbnail?: string | null;
     addedAt: Date;
     _count?: {
       annotations: number;
     };
   }>;
   canAddSongs: boolean;
+  availableInstruments?: string[];
 }
 
-export function SongsList({ bandId, songs, canAddSongs }: SongsListProps) {
+export function SongsList({ bandId, songs, canAddSongs, availableInstruments }: SongsListProps) {
   const [showAddModal, setShowAddModal] = useState(false);
 
   return (
@@ -112,6 +113,7 @@ export function SongsList({ bandId, songs, canAddSongs }: SongsListProps) {
         open={showAddModal} 
         onOpenChange={setShowAddModal}
         bandId={bandId}
+        availableInstruments={availableInstruments}
       />
     </>
   );

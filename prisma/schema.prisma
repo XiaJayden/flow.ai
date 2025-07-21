@@ -87,14 +87,15 @@ model BandMember {
 }
 
 model Song {
-  id        String   @id @default(cuid())
-  bandId    String
-  title     String
-  artist    String?
-  youtubeId String
-  duration  Float    // in seconds
-  thumbnail String?
-  addedAt   DateTime @default(now())
+  id          String   @id @default(cuid())
+  bandId      String
+  title       String
+  artist      String?
+  youtubeId   String
+  duration    Float    // in seconds
+  thumbnail   String?
+  instruments String   @default("[]") // JSON string array of instruments used in this song
+  addedAt     DateTime @default(now())
 
   band        Band         @relation(fields: [bandId], references: [id], onDelete: Cascade)
   annotations Annotation[]

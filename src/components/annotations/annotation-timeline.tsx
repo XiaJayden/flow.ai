@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatTime } from '@/lib/utils';
 import { AnnotationWithDetails } from '@/types';
+import { getInstrumentWithEmoji } from '@/lib/constants';
 
 interface AnnotationTimelineProps {
   annotations: AnnotationWithDetails[];
@@ -142,7 +143,7 @@ export function AnnotationTimeline({
                     <div className="flex flex-wrap gap-1 mt-1">
                       {primaryAnnotation.instruments.slice(0, 3).map(instrument => (
                         <Badge key={instrument} variant="outline" className="text-xs px-1 py-0">
-                          {instrument}
+                          {getInstrumentWithEmoji(instrument)}
                         </Badge>
                       ))}
                       {primaryAnnotation.instruments.length > 3 && (

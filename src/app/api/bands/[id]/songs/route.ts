@@ -3,10 +3,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { getYouTubeVideoDetails, extractYouTubeId } from '@/lib/youtube'
+import { stringifyInstruments } from '@/lib/utils'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +16,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const bandId = params.id
+    const resolvedParams = await params
+    const bandId = resolvedParams.id
 
     // Check if user is a member of this band
     const membership = await db.bandMember.findUnique({
@@ -32,7 +34,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { youtubeUrl, youtubeId } = body
+    const { youtubeUrl, youtubeId, instruments = [] } = body
 
     let videoId: string | null = null
 
@@ -52,7 +54,7 @@ export async function POST(
       where: {
         bandId_youtubeId: {
           bandId,
-          youtubeId: videoId
+          youtubeId: videoId!
         }
       }
     })
@@ -62,7 +64,7 @@ export async function POST(
     }
 
     // Get video details from YouTube
-    const videoDetails = await getYouTubeVideoDetails(videoId)
+    const videoDetails = await getYouTubeVideoDetails(videoId!)
 
     // Add song to band
     const song = await db.song.create({
@@ -70,18 +72,23 @@ export async function POST(
         bandId,
         title: videoDetails.title,
         artist: videoDetails.channelTitle,
-        youtubeId: videoId,
+        youtubeId: videoId!,
         duration: videoDetails.duration,
-        thumbnail: videoDetails.thumbnail
+        thumbnail: videoDetails.thumbnail,
+        instruments: stringifyInstruments(instruments)
       }
     })
 
     return NextResponse.json(song, { status: 201 })
   } catch (error) {
     console.error('Add song error:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     if (error instanceof Error && error.message.includes('YouTube')) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }

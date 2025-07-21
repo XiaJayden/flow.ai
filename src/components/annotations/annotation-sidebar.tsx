@@ -11,6 +11,7 @@ import { formatTime } from '@/lib/utils';
 import { AnnotationWithDetails } from '@/types';
 import { CreateAnnotationForm } from './create-annotation-form';
 import { CommentThread } from './comment-thread';
+import { getInstrumentWithEmoji } from '@/lib/constants';
 
 interface AnnotationSidebarProps {
   annotations: AnnotationWithDetails[];
@@ -112,7 +113,7 @@ export function AnnotationSidebar({
                 className="cursor-pointer hover:bg-primary/80"
                 onClick={() => toggleInstrument(instrument)}
               >
-                {instrument}
+                {getInstrumentWithEmoji(instrument)}
               </Badge>
             ))}
           </div>
@@ -125,6 +126,7 @@ export function AnnotationSidebar({
             songId={songId}
             currentTime={currentTime}
             userInstruments={userInstruments}
+            availableInstruments={availableInstruments}
             onSuccess={() => {
               setShowCreateForm(false);
               onAnnotationCreated();
@@ -173,7 +175,7 @@ export function AnnotationSidebar({
                   <div className="flex flex-wrap gap-1">
                     {annotation.instruments.map(instrument => (
                       <Badge key={instrument} variant="outline" className="text-xs">
-                        {instrument}
+                        {getInstrumentWithEmoji(instrument)}
                       </Badge>
                     ))}
                   </div>

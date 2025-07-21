@@ -53,7 +53,7 @@ export function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <InstrumentAvatar
-                      src={session.user?.image}
+                      src={undefined}
                       alt={session.user?.username || 'User'}
                       instruments={userInstruments}
                       fallbackText={getUserInitials(session.user)}

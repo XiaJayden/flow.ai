@@ -86,6 +86,13 @@ export default async function BandPage({ params }: BandPageProps) {
     members: membersWithInstruments
   };
 
+  // Get all unique instruments from band members
+  const allBandInstruments = Array.from(
+    new Set(
+      membersWithInstruments.flatMap(member => member.user.instruments)
+    )
+  ).sort();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <BandHeader band={bandWithInstruments} userRole={userRole} />
@@ -95,7 +102,8 @@ export default async function BandPage({ params }: BandPageProps) {
           <SongsList 
             bandId={band.id} 
             songs={band.songs} 
-            canAddSongs={userRole === 'admin' || userRole === 'member'} 
+            canAddSongs={userRole === 'admin' || userRole === 'member'}
+            availableInstruments={allBandInstruments}
           />
         </div>
         

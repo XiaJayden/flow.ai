@@ -107,7 +107,8 @@ export default async function SongPage({ params }: SongPageProps) {
     }))
   }));
 
-  // Get all unique instruments from band members
+  // Get song-specific instruments and band instruments
+  const songInstruments = parseInstruments(song.instruments);
   const allBandInstruments = Array.from(
     new Set(
       song.band.members.flatMap(member => 
@@ -116,8 +117,15 @@ export default async function SongPage({ params }: SongPageProps) {
     )
   ).sort();
 
+  // Prioritize song instruments, then band instruments
+  const availableInstruments = Array.from(new Set([
+    ...songInstruments,
+    ...allBandInstruments
+  ]));
+
   const songWithInstruments = {
     ...song,
+    instruments: songInstruments,
     annotations: annotationsWithInstruments
   };
 
@@ -125,7 +133,7 @@ export default async function SongPage({ params }: SongPageProps) {
     <SongPracticePage
       song={songWithInstruments}
       userInstruments={userInstruments}
-      availableInstruments={allBandInstruments}
+      availableInstruments={availableInstruments}
       bandId={resolvedParams.id}
     />
   );

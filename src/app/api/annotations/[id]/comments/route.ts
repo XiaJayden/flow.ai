@@ -6,7 +6,7 @@ import { parseInstruments } from '@/lib/utils'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +15,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const annotationId = params.id
+    const resolvedParams = await params
+    const annotationId = resolvedParams.id
     const { content } = await request.json()
 
     if (!content?.trim()) {

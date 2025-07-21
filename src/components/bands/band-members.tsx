@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InstrumentAvatar } from "@/components/ui/instrument-avatar";
+import { getInstrumentWithEmoji } from "@/lib/constants";
 
 interface BandMembersProps {
   members: Array<{
@@ -10,7 +11,7 @@ interface BandMembersProps {
     user: {
       id: string;
       username: string;
-      name?: string;
+      name?: string | null;
       instruments: string[];
     };
   }>;
@@ -60,7 +61,7 @@ export function BandMembers({ members, userRole, bandId }: BandMembersProps) {
                 <div className="flex flex-wrap gap-1 mt-1">
                   {member.user.instruments.map((instrument) => (
                     <Badge key={instrument} variant="outline" className="text-xs">
-                      {instrument}
+                      {getInstrumentWithEmoji(instrument)}
                     </Badge>
                   ))}
                 </div>

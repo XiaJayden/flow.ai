@@ -7,24 +7,22 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatTime } from '@/lib/utils';
 import { X } from 'lucide-react';
+import { INSTRUMENTS, getInstrumentWithEmoji } from '@/lib/constants';
 
 interface CreateAnnotationFormProps {
   songId: string;
   currentTime: number;
   userInstruments: string[];
+  availableInstruments?: string[];
   onSuccess: () => void;
   onCancel: () => void;
 }
-
-const ALL_INSTRUMENTS = [
-  'Guitar', 'Bass', 'Drums', 'Vocals', 'Piano', 'Keyboard', 
-  'Violin', 'Saxophone', 'Trumpet', 'Other'
-];
 
 export function CreateAnnotationForm({
   songId,
   currentTime,
   userInstruments,
+  availableInstruments,
   onSuccess,
   onCancel
 }: CreateAnnotationFormProps) {
@@ -150,18 +148,45 @@ export function CreateAnnotationForm({
           {/* Instruments */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Instruments</label>
+            {availableInstruments && availableInstruments.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Song instruments available for quick selection
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
-              {ALL_INSTRUMENTS.map(instrument => (
+              {(availableInstruments && availableInstruments.length > 0 
+                ? availableInstruments 
+                : INSTRUMENTS
+              ).map(instrument => (
                 <Badge
                   key={instrument}
                   variant={selectedInstruments.includes(instrument) ? 'default' : 'outline'}
                   className="cursor-pointer hover:bg-primary/80"
                   onClick={() => toggleInstrument(instrument)}
                 >
-                  {instrument}
+                  {getInstrumentWithEmoji(instrument)}
                 </Badge>
               ))}
             </div>
+            {availableInstruments && availableInstruments.length > 0 && (
+              <details className="text-xs">
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                  Show all instruments
+                </summary>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {INSTRUMENTS.filter(inst => !availableInstruments.includes(inst)).map(instrument => (
+                    <Badge
+                      key={instrument}
+                      variant={selectedInstruments.includes(instrument) ? 'default' : 'outline'}
+                      className="cursor-pointer hover:bg-primary/80 text-xs"
+                      onClick={() => toggleInstrument(instrument)}
+                    >
+                      {getInstrumentWithEmoji(instrument)}
+                    </Badge>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
 
           {/* Actions */}

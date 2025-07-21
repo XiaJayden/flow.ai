@@ -6,13 +6,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, ExternalLink } from "lucide-react";
+import { Search, Plus, ExternalLink, Music } from "lucide-react";
 import { formatTime } from "@/lib/utils";
+import { generateInstrumentParts } from "@/lib/constants";
+import { Separator } from "@/components/ui/separator";
+import { InstrumentSelector } from "@/components/ui/instrument-selector";
 
 interface AddSongModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bandId: string;
+  availableInstruments?: string[];
 }
 
 interface YouTubeResult {
@@ -24,14 +28,46 @@ interface YouTubeResult {
   publishedAt: string;
 }
 
-export function AddSongModal({ open, onOpenChange, bandId }: AddSongModalProps) {
+export function AddSongModal({ open, onOpenChange, bandId, availableInstruments = [] }: AddSongModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [results, setResults] = useState<YouTubeResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+  const [instrumentParts, setInstrumentParts] = useState<Record<string, number>>({});
   const router = useRouter();
+
+  const toggleInstrument = (instrument: string) => {
+    setSelectedInstruments(prev => 
+      prev.includes(instrument) 
+        ? prev.filter(i => i !== instrument)
+        : [...prev, instrument]
+    );
+  };
+
+  const updateInstrumentParts = (instrument: string, count: number) => {
+    setInstrumentParts(prev => ({
+      ...prev,
+      [instrument]: count
+    }));
+  };
+
+  const addCustomInstrument = (instrument: string) => {
+    if (!selectedInstruments.includes(instrument)) {
+      setSelectedInstruments(prev => [...prev, instrument]);
+    }
+  };
+
+  const getFinalInstruments = (): string[] => {
+    const finalInstruments: string[] = [];
+    selectedInstruments.forEach(instrument => {
+      const parts = instrumentParts[instrument] || 1;
+      finalInstruments.push(...generateInstrumentParts(instrument, parts));
+    });
+    return finalInstruments;
+  };
 
   const searchYouTube = async () => {
     if (!searchQuery.trim()) return;
@@ -64,7 +100,10 @@ export function AddSongModal({ open, onOpenChange, bandId }: AddSongModalProps) 
       const response = await fetch(`/api/bands/${bandId}/songs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ youtubeUrl: youtubeUrl.trim() })
+        body: JSON.stringify({ 
+          youtubeUrl: youtubeUrl.trim(),
+          instruments: getFinalInstruments()
+        })
       });
 
       if (response.ok) {
@@ -75,10 +114,12 @@ export function AddSongModal({ open, onOpenChange, bandId }: AddSongModalProps) 
         router.refresh();
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to add song');
+        console.error('Song creation error:', data);
+        setError(data.error || data.details || 'Failed to add song');
       }
     } catch (error) {
-      setError('Something went wrong');
+      console.error('Network error:', error);
+      setError('Network error: ' + (error instanceof Error ? error.message : 'Something went wrong'));
     } finally {
       setAdding(null);
     }
@@ -92,7 +133,10 @@ export function AddSongModal({ open, onOpenChange, bandId }: AddSongModalProps) 
       const response = await fetch(`/api/bands/${bandId}/songs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ youtubeId: video.id })
+        body: JSON.stringify({ 
+          youtubeId: video.id,
+          instruments: getFinalInstruments()
+        })
       });
 
       if (response.ok) {
@@ -103,10 +147,12 @@ export function AddSongModal({ open, onOpenChange, bandId }: AddSongModalProps) 
         router.refresh();
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to add song');
+        console.error('Song creation error:', data);
+        setError(data.error || data.details || 'Failed to add song');
       }
     } catch (error) {
-      setError('Something went wrong');
+      console.error('Network error:', error);
+      setError('Network error: ' + (error instanceof Error ? error.message : 'Something went wrong'));
     } finally {
       setAdding(null);
     }
@@ -117,6 +163,8 @@ export function AddSongModal({ open, onOpenChange, bandId }: AddSongModalProps) 
     setYoutubeUrl('');
     setResults([]);
     setError('');
+    setSelectedInstruments([]);
+    setInstrumentParts({});
   };
 
   return (
@@ -138,6 +186,28 @@ export function AddSongModal({ open, onOpenChange, bandId }: AddSongModalProps) 
               {error}
             </div>
           )}
+          
+          {/* Instrument Selection */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Music className="h-4 w-4" />
+              <label className="text-sm font-medium">Instruments Used in This Song</label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Select which instruments will be played in this song to make annotation creation faster.
+            </p>
+            <InstrumentSelector
+              selectedInstruments={selectedInstruments}
+              instrumentParts={instrumentParts}
+              onInstrumentToggle={toggleInstrument}
+              onInstrumentPartsChange={updateInstrumentParts}
+              onCustomInstrumentAdd={addCustomInstrument}
+              availableInstruments={availableInstruments}
+              showPreview={true}
+            />
+          </div>
+          
+          <Separator />
           
           {/* YouTube URL Input */}
           <div className="space-y-2">

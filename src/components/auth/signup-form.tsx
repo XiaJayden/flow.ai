@@ -7,11 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-
-const INSTRUMENTS = [
-  'Guitar', 'Bass', 'Drums', 'Vocals', 'Piano', 'Keyboard', 
-  'Violin', 'Saxophone', 'Trumpet', 'Other'
-]
+import { INSTRUMENTS, getInstrumentWithEmoji } from '@/lib/constants'
 
 export function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -154,7 +150,7 @@ export function SignUpForm() {
                   className="cursor-pointer hover:bg-primary/80"
                   onClick={() => toggleInstrument(instrument)}
                 >
-                  {instrument}
+                  {getInstrumentWithEmoji(instrument)}
                 </Badge>
               ))}
             </div>

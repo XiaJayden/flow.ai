@@ -15,10 +15,10 @@ interface SongPracticePageProps {
   song: {
     id: string;
     title: string;
-    artist?: string;
+    artist?: string | null;
     youtubeId: string;
     duration: number;
-    thumbnail?: string;
+    thumbnail?: string | null;
     bandId: string;
     annotations: AnnotationWithDetails[];
     band: {
