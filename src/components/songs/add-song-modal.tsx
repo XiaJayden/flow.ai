@@ -172,15 +172,16 @@ export function AddSongModal({ open, onOpenChange, bandId, availableInstruments 
       onOpenChange(open);
       if (!open) resetForm();
     }}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add Song to Band</DialogTitle>
           <DialogDescription>
             Search YouTube or paste a YouTube URL to add a song
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-6 p-4">
           {error && (
             <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
               {error}
@@ -306,9 +307,10 @@ export function AddSongModal({ open, onOpenChange, bandId, availableInstruments 
               </div>
             </div>
           )}
+          </div>
         </div>
         
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

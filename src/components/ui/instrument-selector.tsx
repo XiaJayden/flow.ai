@@ -173,12 +173,6 @@ export function InstrumentSelector({
             </CardContent>
           </Card>
 
-          {/* Preview of final instruments */}
-          {showPreview && (
-            <div className="text-xs text-muted-foreground border rounded-md p-2 bg-muted/30">
-              <strong>Final instruments:</strong> {getFinalInstruments().join(', ')}
-            </div>
-          )}
         </div>
       )}
     </div>
