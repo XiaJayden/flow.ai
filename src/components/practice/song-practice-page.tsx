@@ -10,6 +10,7 @@ import { AnnotationSidebar } from '@/components/annotations/annotation-sidebar';
 import { AnnotationTimeline } from '@/components/annotations/annotation-timeline';
 import { AnnotationWithDetails } from '@/types';
 import { formatTime } from '@/lib/utils';
+import { filterInstrumentParts } from '@/lib/constants';
 
 interface SongPracticePageProps {
   song: {
@@ -37,12 +38,17 @@ export function SongPracticePage({
   availableInstruments,
   bandId
 }: SongPracticePageProps) {
+  // Filter out base instruments when numbered parts exist
+  const filteredAvailableInstruments = filterInstrumentParts(availableInstruments);
+  
   const [annotations, setAnnotations] = useState<AnnotationWithDetails[]>(song.annotations);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(song.duration);
   const [seekToTime, setSeekToTime] = useState<number | undefined>();
-  const [selectedInstruments, setSelectedInstruments] = useState<string[]>(availableInstruments);
+  const [selectedInstruments, setSelectedInstruments] = useState<string[]>(filteredAvailableInstruments);
   const [playerReady, setPlayerReady] = useState(false);
+  const [customInstrumentColors, setCustomInstrumentColors] = useState<Record<string, string>>({});
+  const [scrollToAnnotationFn, setScrollToAnnotationFn] = useState<((timestamp: number) => void) | null>(null);
 
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);
@@ -79,6 +85,22 @@ export function SongPracticePage({
 
   const handleTimelineClick = useCallback((time: number) => {
     setSeekToTime(time);
+  }, []);
+
+  const handleInstrumentColorChange = useCallback((instrument: string, color: string) => {
+    setCustomInstrumentColors(prev => ({
+      ...prev,
+      [instrument]: color
+    }));
+  }, []);
+
+  const handleInstrumentFilterChange = useCallback((instruments: string[]) => {
+    setSelectedInstruments(instruments);
+  }, []);
+
+  const handleScrollToAnnotation = useCallback((scrollFunction: (timestamp: number) => void) => {
+    console.log('Setting scroll function:', scrollFunction);
+    setScrollToAnnotationFn(() => scrollFunction);
   }, []);
 
   return (
@@ -130,7 +152,7 @@ export function SongPracticePage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Video Player */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-card rounded-lg p-6">
+            <div className="bg-card rounded-lg p-6 space-y-4">
               <YouTubePlayer
                 videoId={song.youtubeId}
                 onTimeUpdate={handleTimeUpdate}
@@ -139,11 +161,9 @@ export function SongPracticePage({
                 seekToTime={seekToTime}
                 onSeekComplete={handleSeekComplete}
               />
-            </div>
-
-            {/* Timeline */}
-            {playerReady && (
-              <div className="bg-card rounded-lg p-6">
+              
+              {/* Timeline - replaces the YouTube player's progress bar */}
+              {playerReady && (
                 <AnnotationTimeline
                   annotations={annotations}
                   duration={duration}
@@ -151,22 +171,29 @@ export function SongPracticePage({
                   selectedInstruments={selectedInstruments}
                   onSeekToTime={handleSeekToTime}
                   onTimelineClick={handleTimelineClick}
+                  customInstrumentColors={customInstrumentColors}
+                  onMarkerClick={scrollToAnnotationFn}
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Annotation Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-32">
+            <div className="sticky top-32 h-[calc(100vh-8rem)]">
               <AnnotationSidebar
                 annotations={annotations}
-                availableInstruments={availableInstruments}
+                availableInstruments={filteredAvailableInstruments}
                 userInstruments={userInstruments}
                 currentTime={currentTime}
                 onSeekToTime={handleSeekToTime}
                 onAnnotationCreated={handleAnnotationCreated}
                 songId={song.id}
+                customInstrumentColors={customInstrumentColors}
+                onInstrumentColorChange={handleInstrumentColorChange}
+                selectedInstruments={selectedInstruments}
+                onInstrumentFilterChange={handleInstrumentFilterChange}
+                onScrollToAnnotation={handleScrollToAnnotation}
               />
             </div>
           </div>

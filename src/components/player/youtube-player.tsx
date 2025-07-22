@@ -86,14 +86,6 @@ export function YouTubePlayer({
     onTimeUpdate?.(time);
   };
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!player || duration === 0) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    const newTime = percent * duration;
-    seekTo(newTime);
-  };
 
   // Handle external seek requests
   useEffect(() => {
@@ -128,23 +120,6 @@ export function YouTubePlayer({
 
       {/* Custom Controls */}
       <div className="space-y-3">
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div 
-            className="relative h-2 bg-muted rounded-full cursor-pointer"
-            onClick={handleProgressClick}
-          >
-            <div 
-              className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all"
-              style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-        </div>
-
         {/* Control Buttons */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">

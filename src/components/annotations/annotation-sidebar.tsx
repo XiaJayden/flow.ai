@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { formatTime } from '@/lib/utils';
 import { AnnotationWithDetails } from '@/types';
 import { CreateAnnotationForm } from './create-annotation-form';
 import { CommentThread } from './comment-thread';
-import { getInstrumentWithEmoji } from '@/lib/constants';
+import { getInstrumentWithEmoji, getInstrumentColor, COLOR_OPTIONS } from '@/lib/constants';
 
 interface AnnotationSidebarProps {
   annotations: AnnotationWithDetails[];
@@ -21,6 +21,11 @@ interface AnnotationSidebarProps {
   onSeekToTime: (time: number) => void;
   onAnnotationCreated: () => void;
   songId: string;
+  customInstrumentColors?: Record<string, string>;
+  onInstrumentColorChange?: (instrument: string, color: string) => void;
+  selectedInstruments?: string[];
+  onInstrumentFilterChange?: (instruments: string[]) => void;
+  onScrollToAnnotation?: (scrollFunction: (timestamp: number) => void) => void;
 }
 
 export function AnnotationSidebar({
@@ -30,12 +35,37 @@ export function AnnotationSidebar({
   currentTime,
   onSeekToTime,
   onAnnotationCreated,
-  songId
+  songId,
+  customInstrumentColors = {},
+  onInstrumentColorChange,
+  selectedInstruments: externalSelectedInstruments,
+  onInstrumentFilterChange,
+  onScrollToAnnotation
 }: AnnotationSidebarProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedInstruments, setSelectedInstruments] = useState<string[]>(availableInstruments);
+  const [internalSelectedInstruments, setInternalSelectedInstruments] = useState<string[]>(availableInstruments);
   const [expandedAnnotations, setExpandedAnnotations] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [colorPickerVisible, setColorPickerVisible] = useState<string | null>(null);
+  
+  const annotationsContainerRef = useRef<HTMLDivElement>(null);
+  const annotationRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // Use external state if provided, otherwise use internal state
+  const selectedInstruments = externalSelectedInstruments || internalSelectedInstruments;
+  const setSelectedInstruments = onInstrumentFilterChange || setInternalSelectedInstruments;
+
+  // Close color picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (colorPickerVisible && !(event.target as Element).closest('.color-picker-container')) {
+        setColorPickerVisible(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [colorPickerVisible]);
 
   // Filter annotations based on selected instruments and search
   const filteredAnnotations = useMemo(() => {
@@ -55,6 +85,56 @@ export function AnnotationSidebar({
       })
       .sort((a, b) => a.timestamp - b.timestamp);
   }, [annotations, selectedInstruments, searchQuery]);
+
+  // Scroll to annotation function
+  const scrollToAnnotationByTimestamp = useCallback((timestamp: number) => {
+    console.log('Scrolling to annotation at timestamp:', timestamp);
+    
+    // Find the annotation closest to the timestamp
+    if (filteredAnnotations.length === 0) {
+      console.log('No filtered annotations available');
+      return;
+    }
+    
+    const targetAnnotation = filteredAnnotations.find(annotation => 
+      Math.abs(annotation.timestamp - timestamp) < 2.5 // Within 2.5 seconds
+    ) || filteredAnnotations.reduce((closest, annotation) => {
+      const currentDiff = Math.abs(annotation.timestamp - timestamp);
+      const closestDiff = Math.abs(closest.timestamp - timestamp);
+      return currentDiff < closestDiff ? annotation : closest;
+    });
+
+    console.log('Target annotation found:', targetAnnotation?.id, 'at timestamp:', targetAnnotation?.timestamp);
+
+    if (targetAnnotation) {
+      const annotationElement = annotationRefs.current.get(targetAnnotation.id);
+      const container = annotationsContainerRef.current;
+      
+      console.log('Annotation element:', annotationElement, 'Container:', container);
+      
+      if (annotationElement && container) {
+        // Calculate the position to scroll to (top of container)
+        const containerTop = container.getBoundingClientRect().top;
+        const elementTop = annotationElement.getBoundingClientRect().top;
+        const scrollTop = container.scrollTop + (elementTop - containerTop);
+        
+        console.log('Scrolling to position:', scrollTop);
+        
+        // Smooth scroll to the annotation
+        container.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [filteredAnnotations]);
+
+  // Pass scroll function to parent
+  useEffect(() => {
+    if (onScrollToAnnotation) {
+      onScrollToAnnotation(scrollToAnnotationByTimestamp);
+    }
+  }, [onScrollToAnnotation, scrollToAnnotationByTimestamp]);
 
   const toggleInstrument = (instrument: string) => {
     setSelectedInstruments(prev => 
@@ -106,21 +186,37 @@ export function AnnotationSidebar({
             <span className="text-sm font-medium">Filter by instrument:</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {availableInstruments.map(instrument => (
-              <Badge
-                key={instrument}
-                variant={selectedInstruments.includes(instrument) ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-primary/80"
-                onClick={() => toggleInstrument(instrument)}
-              >
-                {getInstrumentWithEmoji(instrument)}
-              </Badge>
-            ))}
+            {availableInstruments.map(instrument => {
+              const color = getInstrumentColor(instrument, customInstrumentColors);
+              const isSelected = selectedInstruments.includes(instrument);
+              
+              return (
+                <button
+                  key={instrument}
+                  className={`text-xs px-2 py-1 rounded-md border transition-all hover:opacity-80 font-medium ${
+                    isSelected 
+                      ? 'text-white' 
+                      : 'text-foreground bg-background'
+                  }`}
+                  style={isSelected ? { 
+                    backgroundColor: color,
+                    borderColor: color
+                  } : {
+                    borderColor: color,
+                    color: color
+                  }}
+                  onClick={() => toggleInstrument(instrument)}
+                >
+                  {getInstrumentWithEmoji(instrument)}
+                </button>
+              );
+            })}
           </div>
         </div>
+
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-y-auto space-y-4">
+      <CardContent className="flex-1 overflow-y-auto space-y-4" ref={annotationsContainerRef}>
         {showCreateForm && (
           <CreateAnnotationForm
             songId={songId}
@@ -151,9 +247,19 @@ export function AnnotationSidebar({
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-72">
             {filteredAnnotations.map(annotation => (
-              <div key={annotation.id} className="border rounded-lg p-3 hover:bg-muted/50">
+              <div 
+                key={annotation.id} 
+                className="border rounded-lg p-3 hover:bg-muted/50"
+                ref={(el) => {
+                  if (el) {
+                    annotationRefs.current.set(annotation.id, el);
+                  } else {
+                    annotationRefs.current.delete(annotation.id);
+                  }
+                }}
+              >
                 {/* Annotation Header */}
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -173,11 +279,48 @@ export function AnnotationSidebar({
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {annotation.instruments.map(instrument => (
-                      <Badge key={instrument} variant="outline" className="text-xs">
-                        {getInstrumentWithEmoji(instrument)}
-                      </Badge>
-                    ))}
+                    {annotation.instruments.map(instrument => {
+                      const color = getInstrumentColor(instrument, customInstrumentColors);
+                      const isColorPickerOpen = colorPickerVisible === instrument;
+                      
+                      return (
+                        <div key={instrument} className="relative color-picker-container">
+                          <button
+                            className="text-xs px-2 py-1 rounded-md border transition-all hover:opacity-80 text-white font-medium"
+                            style={{ 
+                              backgroundColor: color,
+                              borderColor: color
+                            }}
+                            onClick={() => {
+                              if (onInstrumentColorChange) {
+                                setColorPickerVisible(isColorPickerOpen ? null : instrument);
+                              }
+                            }}
+                          >
+                            {getInstrumentWithEmoji(instrument)}
+                          </button>
+                          
+                          {/* Color Picker Popup */}
+                          {isColorPickerOpen && onInstrumentColorChange && (
+                            <div className="absolute top-full left-0 mt-1 bg-popover border rounded-md shadow-lg p-2 z-50">
+                              <div className="grid grid-cols-6 gap-1">
+                                {COLOR_OPTIONS.slice(0, 18).map(colorOption => (
+                                  <button
+                                    key={colorOption}
+                                    className="w-6 h-6 rounded border border-background/20 hover:scale-110 transition-transform"
+                                    style={{ backgroundColor: colorOption }}
+                                    onClick={() => {
+                                      onInstrumentColorChange(instrument, colorOption);
+                                      setColorPickerVisible(null);
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

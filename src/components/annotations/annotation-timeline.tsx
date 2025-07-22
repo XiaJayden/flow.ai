@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatTime } from '@/lib/utils';
 import { AnnotationWithDetails } from '@/types';
-import { getInstrumentWithEmoji } from '@/lib/constants';
+import { getInstrumentWithEmoji, getAnnotationColor } from '@/lib/constants';
 
 interface AnnotationTimelineProps {
   annotations: AnnotationWithDetails[];
@@ -14,6 +14,8 @@ interface AnnotationTimelineProps {
   selectedInstruments: string[];
   onSeekToTime: (time: number) => void;
   onTimelineClick: (time: number) => void;
+  customInstrumentColors?: Record<string, string>;
+  onMarkerClick?: ((timestamp: number) => void) | null;
 }
 
 export function AnnotationTimeline({
@@ -22,7 +24,9 @@ export function AnnotationTimeline({
   currentTime,
   selectedInstruments,
   onSeekToTime,
-  onTimelineClick
+  onTimelineClick,
+  customInstrumentColors,
+  onMarkerClick
 }: AnnotationTimelineProps) {
   // Filter annotations based on selected instruments
   const filteredAnnotations = useMemo(() => {
@@ -80,12 +84,6 @@ export function AnnotationTimeline({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Annotation Timeline</h3>
-        <div className="text-xs text-muted-foreground">
-          {filteredAnnotations.length} annotations
-        </div>
-      </div>
 
       {/* Timeline Container */}
       <div className="relative">
@@ -111,6 +109,7 @@ export function AnnotationTimeline({
             const primaryAnnotation = group[0];
             const position = getAnnotationPosition(primaryAnnotation.timestamp);
             const hasMultiple = group.length > 1;
+            const annotationColor = getAnnotationColor(primaryAnnotation.instruments, customInstrumentColors);
             
             return (
               <div
@@ -120,12 +119,20 @@ export function AnnotationTimeline({
                 onClick={(e) => {
                   e.stopPropagation();
                   onSeekToTime(primaryAnnotation.timestamp);
+                  // Also scroll to the annotation in the sidebar
+                  if (onMarkerClick) {
+                    onMarkerClick(primaryAnnotation.timestamp);
+                  }
                 }}
               >
                 {/* Marker Dot */}
-                <div className={`w-3 h-3 rounded-full border-2 border-background ${
-                  hasMultiple ? 'bg-orange-500' : 'bg-blue-500'
-                } hover:scale-125 transition-transform`} />
+                <div 
+                  className="w-3 h-3 rounded-full border-2 border-background hover:scale-125 transition-transform"
+                  style={{ 
+                    backgroundColor: annotationColor,
+                    boxShadow: hasMultiple ? `0 0 0 1px ${annotationColor}, 0 0 0 3px rgba(255,165,0,0.3)` : undefined
+                  }}
+                />
                 
                 {/* Tooltip */}
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
