@@ -32,7 +32,8 @@ export function InstrumentSelector({
   const [isOpen, setIsOpen] = useState(false);
   const [customInstrument, setCustomInstrument] = useState('');
   
-  const allInstruments = availableInstruments.length > 0 ? availableInstruments : INSTRUMENTS;
+  // Always show the full catalog
+  const allInstruments = INSTRUMENTS;
   
   const handleCustomAdd = () => {
     if (customInstrument.trim() && !selectedInstruments.includes(customInstrument.trim())) {
