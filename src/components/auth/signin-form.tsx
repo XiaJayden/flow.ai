@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,10 +43,21 @@ export function SignInForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-2xl text-center">Sign in to Flow.ai</CardTitle>
-        <p className="text-center text-muted-foreground">
-          Collaborative practice tool for musical bands
-        </p>
+        <div className="flex flex-col items-center space-y-3">
+          <Image
+            src="/flow_logo.png"
+            alt="Flow.ai Logo"
+            width={130}
+            height={130}
+            className="object-contain"
+          />
+          <div className="text-center space-y-3">
+            <CardTitle className="text-2xl">Sign in to Flow.ai</CardTitle>
+            <p className="text-muted-foreground">
+              Collaborative practice tool for musical bands
+            </p>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={handleSubmit}>
