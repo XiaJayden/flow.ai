@@ -1,22 +1,33 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSQL } from '@prisma/adapter-libsql'
-import { createClient } from '@libsql/client'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-function createPrismaClient() {
+function createPrismaClient(): PrismaClient {
   // Use Turso in production, local SQLite in development
   if (process.env.DATABASE_URL?.startsWith('libsql://')) {
-    const libsql = createClient({
-      url: process.env.DATABASE_URL,
-    })
-    const adapter = new PrismaLibSQL(libsql)
-    return new PrismaClient({ 
-      adapter,
-      log: ['query'] 
-    })
+    // Dynamic import for server-side only packages
+    try {
+      const { PrismaLibSQL } = require('@prisma/adapter-libsql')
+      const { createClient } = require('@libsql/client')
+      
+      const libsql = createClient({
+        url: process.env.DATABASE_URL,
+      })
+      const adapter = new PrismaLibSQL(libsql)
+      
+      // Type assertion to bypass build-time type checking
+      const client = new (PrismaClient as any)({ 
+        adapter,
+        log: ['query'] 
+      })
+      
+      return client as PrismaClient
+    } catch (error) {
+      console.error('Failed to initialize Turso client, falling back to local SQLite:', error)
+      return new PrismaClient({ log: ['query'] })
+    }
   }
   
   // Local SQLite for development
