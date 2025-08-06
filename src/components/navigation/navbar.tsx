@@ -47,6 +47,9 @@ export function Navbar() {
               <Link href="/bands">
                 <Button variant="ghost">Bands</Button>
               </Link>
+              <Link href="/studio">
+                <Button variant="ghost">Studio</Button>
+              </Link>
               
               {/* Profile Dropdown */}
               <DropdownMenu>

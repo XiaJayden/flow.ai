@@ -137,11 +137,10 @@ export function AnnotationSidebar({
   }, [onScrollToAnnotation, scrollToAnnotationByTimestamp]);
 
   const toggleInstrument = (instrument: string) => {
-    setSelectedInstruments(prev => 
-      prev.includes(instrument)
-        ? prev.filter(i => i !== instrument)
-        : [...prev, instrument]
-    );
+    const newInstruments = selectedInstruments.includes(instrument)
+      ? selectedInstruments.filter(i => i !== instrument)
+      : [...selectedInstruments, instrument];
+    setSelectedInstruments(newInstruments);
   };
 
   const toggleAnnotationExpanded = (annotationId: string) => {

@@ -39,7 +39,7 @@ export function YouTubePlayer({
         setCurrentTime(time);
         onTimeUpdate?.(time);
       }
-    }, 100);
+    }, 200); // Reduced from 100ms to 200ms for better performance
   }, [player, onTimeUpdate]);
 
   const stopTimeTracking = useCallback(() => {
