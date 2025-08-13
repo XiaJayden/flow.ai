@@ -9,7 +9,10 @@ function createPrismaClient(): PrismaClient {
     nodeEnv: process.env.NODE_ENV,
     dbUrlType: process.env.DATABASE_URL?.startsWith('libsql://') ? 'turso' : 'sqlite',
     vercelEnv: process.env.VERCEL_ENV,
-    runtime: typeof window === 'undefined' ? 'server' : 'client'
+    runtime: typeof window === 'undefined' ? 'server' : 'client',
+    dbUrlLength: process.env.DATABASE_URL?.length,
+    hasAuthToken: process.env.DATABASE_URL?.includes('authToken='),
+    dbUrlPrefix: process.env.DATABASE_URL?.substring(0, 30),
   })
 
   // Use Turso in production, local SQLite in development

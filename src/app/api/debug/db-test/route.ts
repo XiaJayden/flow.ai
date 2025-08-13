@@ -7,9 +7,14 @@ export async function GET(request: NextRequest) {
     environment: {
       nodeEnv: process.env.NODE_ENV,
       vercelEnv: process.env.VERCEL_ENV,
+      vercelRegion: process.env.VERCEL_REGION,
       hasDbUrl: !!process.env.DATABASE_URL,
-      dbUrlPrefix: process.env.DATABASE_URL?.substring(0, 20),
+      dbUrlPrefix: process.env.DATABASE_URL?.substring(0, 30),
+      dbUrlSuffix: process.env.DATABASE_URL?.substring(process.env.DATABASE_URL.length - 30),
+      dbUrlLength: process.env.DATABASE_URL?.length,
       isTurso: process.env.DATABASE_URL?.startsWith('libsql://'),
+      hasAuthToken: process.env.DATABASE_URL?.includes('authToken='),
+      runtime: typeof globalThis !== 'undefined' ? 'node' : 'browser',
     },
     tests: [] as any[]
   }
