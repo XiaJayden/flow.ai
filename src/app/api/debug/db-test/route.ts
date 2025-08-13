@@ -65,10 +65,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Convert BigInt values to strings for JSON serialization
+    const sanitizedResults = JSON.parse(JSON.stringify(testResults, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    ))
+
     return NextResponse.json({
       success: true,
       message: 'All database tests passed!',
-      ...testResults
+      ...sanitizedResults
     })
 
   } catch (error) {

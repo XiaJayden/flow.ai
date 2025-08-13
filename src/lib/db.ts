@@ -72,33 +72,30 @@ function createPrismaClient(): PrismaClient {
       
       console.log('✅ Turso client created successfully')
       return client as PrismaClient
-    } catch (error) {
+    } catch (err) {
+      const error = err as Error
       console.error('❌ Failed to initialize Turso client:', error)
       console.error('Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack?.substring(0, 500) : undefined,
-        name: error instanceof Error ? error.name : undefined
+        message: error.message || 'Unknown error',
+        stack: error.stack?.substring(0, 500),
+        name: error.name
       })
       
       // Log specific error types
-      if (error instanceof Error) {
-        if (error.message.includes('Cannot find module')) {
-          console.error('🔍 Module resolution error - check dependencies')
-        }
-        if (error.message.includes('adapter')) {
-          console.error('🔍 Adapter initialization error')
-        }
-        if (error.message.includes('libsql')) {
-          console.error('🔍 LibSQL client error - check DATABASE_URL')
-        }
+      if (error.message?.includes('Cannot find module')) {
+        console.error('🔍 Module resolution error - check dependencies')
+      }
+      if (error.message?.includes('adapter')) {
+        console.error('🔍 Adapter initialization error')
+      }
+      if (error.message?.includes('libsql')) {
+        console.error('🔍 LibSQL client error - check DATABASE_URL')
       }
       
-      // In production, create a basic client and let it fail at query time with better error
+      // In production, throw the error to debug further
       if (process.env.NODE_ENV === 'production') {
-        console.log('Creating fallback Prisma client for production')
-        return new PrismaClient({
-          log: ['error']
-        })
+        console.log('Turso initialization failed in production, throwing error for debugging')
+        throw error
       }
       
       console.log('Falling back to local SQLite in development')
