@@ -88,7 +88,9 @@ export async function GET(request: NextRequest) {
     // Provide helpful error analysis
     let errorAnalysis = 'Unknown database error'
     if (error instanceof Error) {
-      if (error.message.includes('SQLITE_AUTH') || error.message.includes('unauthorized')) {
+      if (error.message.includes('Error code 14') || error.message.includes('Unable to open the database file')) {
+        errorAnalysis = 'Turso auth token invalid/expired or database does not exist - generate new token with: turso db tokens create flowai'
+      } else if (error.message.includes('SQLITE_AUTH') || error.message.includes('unauthorized')) {
         errorAnalysis = 'Authentication failed - check your Turso auth token'
       } else if (error.message.includes('network') || error.message.includes('fetch')) {
         errorAnalysis = 'Network connectivity issue - check Turso URL and internet connection'
