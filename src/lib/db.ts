@@ -46,12 +46,12 @@ function createPrismaClient(): PrismaClient {
         name: error instanceof Error ? error.name : undefined
       })
       
-      // In production, don't fall back to SQLite - this will cause issues
-      if (process.env.NODE_ENV === 'production') {
+      // In production runtime, don't fall back to SQLite - this will cause issues
+      if (process.env.NODE_ENV === 'production' && process.env.VERCEL) {
         throw new Error('Failed to initialize Turso database client in production')
       }
       
-      console.log('Falling back to local SQLite in development')
+      console.log('Falling back to local SQLite')
       return new PrismaClient({ log: ['query'] })
     }
   }
@@ -63,6 +63,15 @@ function createPrismaClient(): PrismaClient {
   })
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient()
+// Lazy initialization to avoid build-time issues
+let _db: PrismaClient | undefined
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+export const db = new Proxy({} as PrismaClient, {
+  get(target, prop) {
+    if (!_db) {
+      _db = globalForPrisma.prisma ?? createPrismaClient()
+      if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = _db
+    }
+    return (_db as any)[prop]
+  }
+})
