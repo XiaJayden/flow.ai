@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 // Script to verify environment variables and Turso configuration
-require('dotenv').config();
+try {
+  require('dotenv').config();
+} catch (e) {
+  console.log('dotenv not available, using system env vars');
+}
 
 function checkEnvironmentVariables() {
   console.log('🔍 Checking Environment Variables...\n');

@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 // Test script to verify Turso database connection
-require('dotenv').config();
+try {
+  require('dotenv').config();
+} catch (e) {
+  console.log('dotenv not available, using system env vars');
+}
 
 async function testTursoConnection() {
   console.log('🔍 Testing Turso Database Connection...\n');
