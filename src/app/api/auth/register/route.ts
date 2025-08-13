@@ -53,13 +53,24 @@ export async function POST(request: NextRequest) {
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      cause: error instanceof Error ? error.cause : undefined,
       env: {
+        nodeEnv: process.env.NODE_ENV,
         hasDbUrl: !!process.env.DATABASE_URL,
-        hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET
+        dbUrlPrefix: process.env.DATABASE_URL?.substring(0, 10),
+        hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+        vercelEnv: process.env.VERCEL_ENV
       }
     })
+    
+    // Return more specific error in development
+    const isDev = process.env.NODE_ENV === 'development'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: isDev ? (error instanceof Error ? error.message : 'Unknown error') : 'Internal server error',
+        ...(isDev && { stack: error instanceof Error ? error.stack : undefined })
+      },
       { status: 500 }
     )
   }
