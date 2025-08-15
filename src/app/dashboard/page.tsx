@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { parseInstruments } from "@/lib/utils";
-import { BandsList } from "@/components/bands/bands-list";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { SongPriorityWidget } from "@/components/dashboard/song-priority-widget";
+import { BandActivityWidget } from "@/components/dashboard/band-activity-widget";
+import { CalendarWidget } from "@/components/dashboard/calendar-widget";
+import { RecordWidget } from "@/components/dashboard/record-widget";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -50,10 +52,19 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <DashboardStats bands={bands} />
-      
-      <div className="mt-8">
-        <BandsList bands={bands} />
+      {/* Dashboard Widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6">
+        {/* Left Column - 65% */}
+        <div className="space-y-6">
+          <SongPriorityWidget bands={bands} />
+          <BandActivityWidget bands={bands} />
+        </div>
+        
+        {/* Right Column - 35% */}
+        <div className="space-y-6">
+          <CalendarWidget />
+          <RecordWidget />
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { InstrumentAvatar } from '@/components/ui/instrument-avatar'
 import {
@@ -11,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Music, User, Settings, LogOut } from 'lucide-react'
+import { Music, User, Settings, LogOut, Bell, Plus, ChevronDown } from 'lucide-react'
 import { parseInstruments } from '@/lib/utils'
 
 export function Navbar() {
@@ -33,35 +34,97 @@ export function Navbar() {
   return (
     <nav className="border-b bg-background">
       <div className="flex h-16 items-center px-4 md:px-6">
-        <Link href="/" className="flex items-center space-x-2">
-          <Music className="h-6 w-6" />
-          <span className="text-xl font-bold">Flow.ai</span>
+        {/* Left: Logo and Flow.ai */}
+        <Link href="/" className="flex items-center space-x-4">
+          <div className="relative translate-y-0.25">
+            <Image
+              src="/flow_logo.png"
+              alt="Flow.ai Logo"
+              width={56}
+              height={56}
+              className="rounded-md"
+            />
+          </div>
+          <div className="flex items-center">
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Flow.ai
+            </span>
+          </div>
         </Link>
         
-        <div className="ml-auto flex items-center space-x-4">
+        <div className="ml-auto flex items-center space-x-3 translate-x-1">
           {session ? (
             <>
-              <Link href="/dashboard">
-                <Button variant="ghost">Dashboard</Button>
-              </Link>
-              <Link href="/bands">
-                <Button variant="ghost">Bands</Button>
-              </Link>
-              <Link href="/studio">
-                <Button variant="ghost">Studio</Button>
-              </Link>
-              
-              {/* Profile Dropdown */}
+              {/* View Switch Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <InstrumentAvatar
-                      src={undefined}
-                      alt={session.user?.username || 'User'}
-                      instruments={userInstruments}
-                      fallbackText={getUserInitials(session.user)}
-                      className="h-8 w-8"
-                    />
+                  <Button 
+                    variant="outline" 
+                    className="h-10 px-4 rounded-2xl bg-background/60 backdrop-blur border-border/80 hover:bg-muted/50 transition-all duration-200"
+                  >
+                    <span className="font-medium">Dashboard</span>
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48" align="end">
+                  <DropdownMenuItem className="font-medium">
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Your Bands
+                  </div>
+                  <DropdownMenuItem>
+                    <Music className="mr-2 h-4 w-4" />
+                    <span>Jamberry</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Music className="mr-2 h-4 w-4" />
+                    <span>Paramore</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span>Create New Band</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Join Band</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Notification Bell */}
+              <Button 
+                variant="outline" 
+                size="icon"
+                className="relative h-10 w-10 rounded-full border-border/80 bg-background/60 backdrop-blur hover:bg-muted/50 transition-colors"
+              >
+                <Bell className="h-5 w-5" />
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></div>
+              </Button>
+
+              {/* User Info */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="h-10 px-3 rounded-2xl bg-background/60 backdrop-blur border-border/80 hover:bg-muted/50 transition-all duration-200 min-w-32"
+                  >
+                    <div className="flex items-center space-x-3 w-full">
+                      <InstrumentAvatar
+                        src={undefined}
+                        alt={session.user?.username || 'User'}
+                        instruments={userInstruments}
+                        fallbackText={getUserInitials(session.user)}
+                        className="h-8 w-8 flex-shrink-0"
+                      />
+                      <div className="text-left flex-1 min-w-0">
+                        <div className="text-sm font-medium leading-none truncate">
+                          {session.user?.name || session.user?.username}
+                        </div>
+                      </div>
+                    </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
