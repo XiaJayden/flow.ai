@@ -116,9 +116,9 @@ export function SongPriorityWidget({ bands }: SongPriorityWidgetProps) {
       </Tabs>
 
       {/* Songs List */}
-      <div className="space-y-3 max-h-96 overflow-y-auto">
+      <div className="space-y-2 max-h-64 overflow-y-auto">
         {sortedSongs.map((song) => (
-          <div key={song.id} className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+          <div key={song.id} className="flex items-center space-x-3 p-2 rounded-lg border hover:bg-muted/50 transition-colors">
             <div className={`w-3 h-3 rounded-full ${priorityColors[song.priority]}`} />
             
             <div className="flex-1 min-w-0">

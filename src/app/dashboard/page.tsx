@@ -43,7 +43,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold">
           Welcome back, {session.user?.name || session.user?.username}!
         </h1>
@@ -53,15 +53,15 @@ export default async function DashboardPage() {
       </div>
 
       {/* Dashboard Widgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6">
-        {/* Left Column - 65% */}
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-4">
+        {/* Left Column - 60% */}
+        <div className="space-y-4">
           <SongPriorityWidget bands={bands} />
           <BandActivityWidget bands={bands} />
         </div>
         
-        {/* Right Column - 35% */}
-        <div className="space-y-6">
+        {/* Right Column - 40% */}
+        <div className="space-y-4">
           <CalendarWidget />
           <RecordWidget />
         </div>

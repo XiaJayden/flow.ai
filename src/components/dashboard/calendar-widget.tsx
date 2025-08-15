@@ -12,7 +12,7 @@ const dummyEvents = [
     id: '1',
     title: 'Band Practice',
     band: 'Jamberry',
-    date: new Date(2024, 11, 20, 19, 0), // Dec 20, 2024, 7:00 PM
+    date: new Date(2025, 7, 18, 19, 0), // Aug 18, 2025, 7:00 PM
     location: 'Mike\'s Garage',
     attendees: 4,
     type: 'practice' as const
@@ -21,7 +21,7 @@ const dummyEvents = [
     id: '2',
     title: 'Recording Session',
     band: 'Paramore',
-    date: new Date(2024, 11, 22, 14, 0), // Dec 22, 2024, 2:00 PM
+    date: new Date(2025, 7, 22, 14, 0), // Aug 22, 2025, 2:00 PM
     location: 'Sound Studio',
     attendees: 5,
     type: 'recording' as const
@@ -30,7 +30,7 @@ const dummyEvents = [
     id: '3',
     title: 'Gig - Local Venue',
     band: 'Jamberry',
-    date: new Date(2024, 11, 28, 20, 0), // Dec 28, 2024, 8:00 PM
+    date: new Date(2025, 7, 28, 20, 0), // Aug 28, 2025, 8:00 PM
     location: 'The Rock House',
     attendees: 4,
     type: 'gig' as const
@@ -39,7 +39,7 @@ const dummyEvents = [
     id: '4',
     title: 'Songwriting Session',
     band: 'Paramore',
-    date: new Date(2025, 0, 3, 16, 0), // Jan 3, 2025, 4:00 PM
+    date: new Date(2025, 8, 3, 16, 0), // Sep 3, 2025, 4:00 PM
     location: 'Emma\'s Studio',
     attendees: 3,
     type: 'writing' as const
@@ -48,7 +48,7 @@ const dummyEvents = [
     id: '5',
     title: 'Band Practice',
     band: 'Jamberry',
-    date: new Date(2025, 0, 8, 19, 0), // Jan 8, 2025, 7:00 PM
+    date: new Date(2025, 8, 8, 19, 0), // Sep 8, 2025, 7:00 PM
     location: 'Community Center',
     attendees: 4,
     type: 'practice' as const
@@ -127,10 +127,12 @@ export function CalendarWidget() {
         </div>
       </div>
 
+{/* HARD CODED HEIGHTS LMFAOOOO WE'LL HAVE TO SEEE */}
+
       {viewMode === 'list' ? (
-        <div className="space-y-3 max-h-80 overflow-y-auto">
+        <div className="space-y-2 overflow-y-auto" style={{ height: '358px' }}>
           {upcomingEvents.map((event) => (
-            <div key={event.id} className="flex space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+            <div key={event.id} className="flex space-x-3 p-2 rounded-lg border hover:bg-muted/50 transition-colors">
               <div className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${eventTypeColors[event.type]}`} />
               
               <div className="flex-1 min-w-0">

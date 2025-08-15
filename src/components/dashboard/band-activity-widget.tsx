@@ -111,11 +111,11 @@ export function BandActivityWidget({ bands }: BandActivityWidgetProps) {
         <Badge variant="secondary">{dummyActivities.length} recent</Badge>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-3 max-h-64 overflow-y-auto">
         {dummyActivities.map((activity) => {
           const Icon = activityIcons[activity.type];
           return (
-            <div key={activity.id} className="flex space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+            <div key={activity.id} className="flex space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
               <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src={activity.user.avatar || undefined} />
                 <AvatarFallback className="text-xs">
