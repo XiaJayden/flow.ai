@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -14,9 +16,35 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Music, User, Settings, LogOut, Bell, Plus, ChevronDown } from 'lucide-react'
 import { parseInstruments } from '@/lib/utils'
+import { CreateBandModal } from '@/components/bands/create-band-modal'
+import { JoinBandModal } from '@/components/bands/join-band-modal'
 
-export function Navbar() {
+interface Band {
+  id: string;
+  name: string;
+  role: string;
+  joinedAt: Date;
+  _count?: {
+    members: number;
+    songs: number;
+  };
+}
+
+interface NavbarProps {
+  bands?: Band[];
+  currentSong?: {
+    title: string;
+    band: {
+      name: string;
+    };
+  };
+}
+
+export function Navbar({ bands = [], currentSong }: NavbarProps) {
   const { data: session } = useSession()
+  const pathname = usePathname()
+  const [createBandOpen, setCreateBandOpen] = useState(false)
+  const [joinBandOpen, setJoinBandOpen] = useState(false)
 
   const getUserInitials = (user: any) => {
     if (user?.name) {
@@ -30,6 +58,31 @@ export function Navbar() {
 
   // Get user's instruments from session if available
   const userInstruments = session?.user ? parseInstruments((session.user as any).instruments || '[]') : []
+
+  // Determine dropdown title based on current page
+  const getDropdownTitle = () => {
+    if (currentSong) {
+      return currentSong.title;
+    }
+    
+    if (pathname === '/dashboard') {
+      return 'Dashboard';
+    }
+    
+    if (pathname === '/studio') {
+      return 'Studio';
+    }
+    
+    // Check if we're on a band page
+    const bandMatch = pathname.match(/^\/bands\/([^\/]+)$/);
+    if (bandMatch) {
+      const bandId = bandMatch[1];
+      const currentBand = bands.find(band => band.id === bandId);
+      return currentBand?.name || 'Band';
+    }
+    
+    return 'Dashboard';
+  };
 
   return (
     <nav className="border-b bg-background">
@@ -62,32 +115,38 @@ export function Navbar() {
                     variant="outline" 
                     className="h-10 px-4 rounded-2xl bg-background/60 backdrop-blur border-border/80 hover:bg-muted/50 transition-all duration-200"
                   >
-                    <span className="font-medium">Dashboard</span>
+                    <span className="font-medium">{getDropdownTitle()}</span>
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48" align="end">
-                  <DropdownMenuItem className="font-medium">
-                    <span>Dashboard</span>
-                  </DropdownMenuItem>
+                  <Link href="/dashboard">
+                    <DropdownMenuItem className="font-medium">
+                      <span>Dashboard</span>
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator />
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Your Bands
-                  </div>
-                  <DropdownMenuItem>
-                    <Music className="mr-2 h-4 w-4" />
-                    <span>Jamberry</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Music className="mr-2 h-4 w-4" />
-                    <span>Paramore</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  {bands.length > 0 && (
+                    <>
+                      <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Your Bands
+                      </div>
+                      {bands.map((band) => (
+                        <Link key={band.id} href={`/bands/${band.id}`}>
+                          <DropdownMenuItem>
+                            <Music className="mr-2 h-4 w-4" />
+                            <span>{band.name}</span>
+                          </DropdownMenuItem>
+                        </Link>
+                      ))}
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={() => setCreateBandOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     <span>Create New Band</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setJoinBandOpen(true)}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Join Band</span>
                   </DropdownMenuItem>
@@ -176,6 +235,10 @@ export function Navbar() {
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <CreateBandModal open={createBandOpen} onOpenChange={setCreateBandOpen} />
+      <JoinBandModal open={joinBandOpen} onOpenChange={setJoinBandOpen} />
     </nav>
   )
 }
