@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -12,31 +11,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 
-interface CreateSetlistModalProps {
+interface CreateAnnouncementModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bandId: string;
-  onSetlistCreated?: (setlist: any) => void;
+  onAnnouncementCreated?: (announcement: any) => void;
 }
 
-export function CreateSetlistModal({ 
+export function CreateAnnouncementModal({ 
   open, 
   onOpenChange, 
   bandId,
-  onSetlistCreated 
-}: CreateSetlistModalProps) {
-  const [name, setName] = useState('');
+  onAnnouncementCreated 
+}: CreateAnnouncementModalProps) {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim()) {
-      setError('Setlist name is required');
+    if (!title.trim() || !content.trim()) {
+      setError('Title and content are required');
       return;
     }
 
@@ -44,37 +44,34 @@ export function CreateSetlistModal({
     setError('');
 
     try {
-      const response = await fetch(`/api/bands/${bandId}/setlists`, {
+      const response = await fetch(`/api/bands/${bandId}/announcements`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ 
+          title: title.trim(), 
+          content: content.trim() 
+        }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create setlist');
+        throw new Error(data.error || 'Failed to create announcement');
       }
 
-      const newSetlist = await response.json();
+      const newAnnouncement = await response.json();
       
       // Reset form
-      setName('');
+      setTitle('');
+      setContent('');
       setError('');
       onOpenChange(false);
       
       // Notify parent component
-      if (onSetlistCreated) {
-        onSetlistCreated({
-          id: newSetlist.id,
-          name: newSetlist.name,
-          songCount: newSetlist._count.setlistSongs
-        });
+      if (onAnnouncementCreated) {
+        onAnnouncementCreated(newAnnouncement);
       }
-      
-      // Refresh the page to update the setlists
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -86,7 +83,8 @@ export function CreateSetlistModal({
     if (!isLoading) {
       onOpenChange(newOpen);
       if (!newOpen) {
-        setName('');
+        setTitle('');
+        setContent('');
         setError('');
       }
     }
@@ -96,28 +94,42 @@ export function CreateSetlistModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Setlist</DialogTitle>
+          <DialogTitle>Create Announcement</DialogTitle>
           <DialogDescription>
-            Create a new setlist to organize your band's songs for performances or practice sessions.
+            Share news, updates, or reminders with your band members.
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Setlist Name</Label>
+            <Label htmlFor="title">Title</Label>
             <Input
-              id="name"
+              id="title"
               type="text"
-              placeholder="e.g., Wembley Stadium 1985"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Rehearsal this Wednesday"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               disabled={isLoading}
               className={error ? 'border-red-500' : ''}
             />
-            {error && (
-              <p className="text-sm text-red-500">{error}</p>
-            )}
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="content">Message</Label>
+            <Textarea
+              id="content"
+              placeholder="Add details about your announcement..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              disabled={isLoading}
+              rows={3}
+              className={error ? 'border-red-500' : ''}
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
           
           <div className="flex justify-end space-x-2 pt-4">
             <Button
@@ -130,12 +142,12 @@ export function CreateSetlistModal({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !name.trim()}
+              disabled={isLoading || !title.trim() || !content.trim()}
             >
               {isLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Create Setlist
+              Create Announcement
             </Button>
           </div>
         </form>

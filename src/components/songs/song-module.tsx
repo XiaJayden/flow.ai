@@ -72,13 +72,19 @@ export function SongModule({
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
 
-    if (!destination) return;
+    console.log('Drag end:', { destination, source, draggableId });
+
+    if (!destination) {
+      console.log('No destination');
+      return;
+    }
 
     // If dropped in the same location, do nothing
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     ) {
+      console.log('Dropped in same location');
       return;
     }
 
@@ -86,6 +92,8 @@ export function SongModule({
     if (source.droppableId === "all" && destination.droppableId !== "all") {
       const songId = draggableId;
       const setlistId = destination.droppableId;
+
+      console.log('Adding song to setlist:', { songId, setlistId });
 
       try {
         const response = await fetch(`/api/bands/${bandId}/setlists/${setlistId}/songs`, {
@@ -96,9 +104,19 @@ export function SongModule({
           body: JSON.stringify({ songId }),
         });
 
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
+          const responseData = await response.json();
+          console.log('Song added successfully:', responseData);
           // Refresh the setlist songs
           await fetchSetlistSongs(setlistId);
+          // Update the setlist song count in the tab
+          setLocalSetlists(prev => prev.map(setlist => 
+            setlist.id === setlistId 
+              ? { ...setlist, songCount: setlist.songCount + 1 }
+              : setlist
+          ));
         } else {
           const data = await response.json();
           console.error('Error adding song to setlist:', data.error);
@@ -106,6 +124,8 @@ export function SongModule({
       } catch (error) {
         console.error('Error adding song to setlist:', error);
       }
+    } else {
+      console.log('Not a valid drop (all to setlist):', { source: source.droppableId, destination: destination.droppableId });
     }
   };
 
@@ -141,13 +161,23 @@ export function SongModule({
                       </TabsTrigger>
                       
                       {localSetlists.map((setlist) => (
-                        <TabsTrigger 
-                          key={setlist.id}
-                          value={setlist.id}
-                          className="data-[state=active]:bg-muted rounded-md px-6 py-3 whitespace-nowrap"
-                        >
-                          {setlist.name} ({setlist.songCount})
-                        </TabsTrigger>
+                        <Droppable key={setlist.id} droppableId={setlist.id}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                              className={`${snapshot.isDraggingOver ? 'bg-blue-100 rounded-md' : ''}`}
+                            >
+                              <TabsTrigger 
+                                value={setlist.id}
+                                className="data-[state=active]:bg-muted rounded-md px-6 py-3 whitespace-nowrap"
+                              >
+                                {setlist.name} ({setlist.songCount})
+                              </TabsTrigger>
+                              <div className="hidden">{provided.placeholder}</div>
+                            </div>
+                          )}
+                        </Droppable>
                       ))}
                     </TabsList>
                     
@@ -194,27 +224,16 @@ export function SongModule({
 
               {localSetlists.map((setlist) => (
                 <TabsContent key={setlist.id} value={setlist.id} className="m-0 p-6">
-                  <Droppable droppableId={setlist.id}>
-                    {(provided, snapshot) => (
-                      <div 
-                        ref={provided.innerRef} 
-                        {...provided.droppableProps}
-                        className={`min-h-32 ${snapshot.isDraggingOver ? 'bg-muted/50 rounded-lg' : ''}`}
-                      >
-                        <SongsList 
-                          bandId={bandId}
-                          songs={filteredSongs}
-                          canAddSongs={false}
-                          availableInstruments={availableInstruments}
-                          currentView="setlist"
-                          setlistId={setlist.id}
-                          setlistName={setlist.name}
-                          isDragContext={true}
-                        />
-                        {provided.placeholder}
-                      </div>
-                    )}
-                  </Droppable>
+                  <SongsList 
+                    bandId={bandId}
+                    songs={filteredSongs}
+                    canAddSongs={false}
+                    availableInstruments={availableInstruments}
+                    currentView="setlist"
+                    setlistId={setlist.id}
+                    setlistName={setlist.name}
+                    isDragContext={false}
+                  />
                 </TabsContent>
               ))}
             </Tabs>

@@ -6,7 +6,9 @@ import { db } from "@/lib/db";
 import { parseInstruments } from "@/lib/utils";
 import { BandHeader } from "@/components/bands/band-header";
 import { SongModule } from "@/components/songs/song-module";
-import { BandMembers } from "@/components/bands/band-members";
+import { AnnouncementsModule } from "@/components/announcements/announcements-module";
+import { PracticeSchedulerModule } from "@/components/practice/practice-scheduler-module";
+import { BandAvatarsModule } from "@/components/avatars/band-avatars-module";
 
 interface BandPageProps {
   params: Promise<{
@@ -66,6 +68,34 @@ export default async function BandPage({ params }: BandPageProps) {
               createdAt: 'asc'
             }
           },
+          announcements: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            }
+          },
+          events: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true
+                }
+              }
+            },
+            orderBy: {
+              eventDate: 'asc'
+            }
+          },
           _count: {
             select: {
               members: true,
@@ -105,6 +135,11 @@ export default async function BandPage({ params }: BandPageProps) {
     )
   ).sort();
 
+  // Get next practice (upcoming practice event)
+  const nextPractice = band.events
+    .filter(event => event.eventType === 'practice' && new Date(event.eventDate) > new Date())
+    .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime())[0] || null;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <BandHeader band={bandWithInstruments} userRole={userRole} />
@@ -124,12 +159,32 @@ export default async function BandPage({ params }: BandPageProps) {
           />
         </div>
         
-        <div className="w-[35%]">
-          <BandMembers 
-            members={membersWithInstruments} 
-            userRole={userRole}
-            bandId={band.id}
-          />
+        <div className="w-[35%] flex flex-col gap-4">
+          {/* Announcements Module - 40% */}
+          <div className="h-[40vh]">
+            <AnnouncementsModule 
+              bandId={band.id}
+              announcements={band.announcements}
+              nextPractice={nextPractice}
+              currentUserId={session.user.id}
+            />
+          </div>
+          
+          {/* Practice Scheduler Module - 40% */}
+          <div className="h-[40vh]">
+            <PracticeSchedulerModule 
+              bandId={band.id}
+              events={band.events}
+              currentUserId={session.user.id}
+            />
+          </div>
+          
+          {/* Band Avatars Module - 20% */}
+          <div className="h-[20vh]">
+            <BandAvatarsModule 
+              members={membersWithInstruments}
+            />
+          </div>
         </div>
       </div>
     </div>

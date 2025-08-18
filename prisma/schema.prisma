@@ -48,11 +48,13 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  accounts    Account[]
-  sessions    Session[]
-  bandMembers BandMember[]
-  annotations Annotation[]
-  comments    Comment[]
+  accounts      Account[]
+  sessions      Session[]
+  bandMembers   BandMember[]
+  annotations   Annotation[]
+  comments      Comment[]
+  announcements Announcement[]
+  events        BandEvent[]
 }
 
 model VerificationToken {
@@ -70,9 +72,11 @@ model Band {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members  BandMember[]
-  songs    Song[]
-  setlists Setlist[]
+  members       BandMember[]
+  songs         Song[]
+  setlists      Setlist[]
+  announcements Announcement[]
+  events        BandEvent[]
 }
 
 model BandMember {
@@ -156,4 +160,33 @@ model Comment {
 
   annotation Annotation @relation(fields: [annotationId], references: [id], onDelete: Cascade)
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  bandId    String
+  userId    String
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BandEvent {
+  id          String   @id @default(cuid())
+  bandId      String
+  userId      String
+  title       String
+  description String?
+  eventType   String   // "practice", "gig", "songwriting", "meeting", etc.
+  eventDate   DateTime
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
