@@ -128,6 +128,13 @@ export default async function BandPage({ params }: BandPageProps) {
     members: membersWithInstruments
   };
 
+  // Transform announcements to convert dates to strings
+  const transformedAnnouncements = band.announcements.map(announcement => ({
+    ...announcement,
+    createdAt: announcement.createdAt.toISOString(),
+    updatedAt: announcement.updatedAt.toISOString()
+  }));
+
   // Get all unique instruments from band members
   const allBandInstruments = Array.from(
     new Set(
@@ -136,9 +143,25 @@ export default async function BandPage({ params }: BandPageProps) {
   ).sort();
 
   // Get next practice (upcoming practice event)
-  const nextPractice = band.events
+  const nextPracticeRaw = band.events
     .filter(event => event.eventType === 'practice' && new Date(event.eventDate) > new Date())
     .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime())[0] || null;
+
+  // Transform next practice to convert dates to strings
+  const nextPractice = nextPracticeRaw ? {
+    ...nextPracticeRaw,
+    eventDate: nextPracticeRaw.eventDate.toISOString(),
+    createdAt: nextPracticeRaw.createdAt.toISOString(),
+    updatedAt: nextPracticeRaw.updatedAt.toISOString()
+  } : null;
+
+  // Transform all events to convert dates to strings
+  const transformedEvents = band.events.map(event => ({
+    ...event,
+    eventDate: event.eventDate.toISOString(),
+    createdAt: event.createdAt.toISOString(),
+    updatedAt: event.updatedAt.toISOString()
+  }));
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -164,7 +187,7 @@ export default async function BandPage({ params }: BandPageProps) {
           <div className="h-[40vh]">
             <AnnouncementsModule 
               bandId={band.id}
-              announcements={band.announcements}
+              announcements={transformedAnnouncements}
               nextPractice={nextPractice}
               currentUserId={session.user.id}
             />
@@ -174,7 +197,7 @@ export default async function BandPage({ params }: BandPageProps) {
           <div className="h-[40vh]">
             <PracticeSchedulerModule 
               bandId={band.id}
-              events={band.events}
+              events={transformedEvents}
               currentUserId={session.user.id}
             />
           </div>
