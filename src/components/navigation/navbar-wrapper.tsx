@@ -6,7 +6,7 @@ import { Navbar } from "./navbar";
 
 export async function NavbarWrapper() {
   const session = await getServerSession(authOptions);
-  const headersList = headers();
+  const headersList = await headers();
   const pathname = headersList.get('x-pathname') || '';
   
   let bands: any[] = [];
