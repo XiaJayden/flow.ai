@@ -70,8 +70,9 @@ model Band {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members BandMember[]
-  songs   Song[]
+  members  BandMember[]
+  songs    Song[]
+  setlists Setlist[]
 }
 
 model BandMember {
@@ -100,8 +101,34 @@ model Song {
 
   band        Band         @relation(fields: [bandId], references: [id], onDelete: Cascade)
   annotations Annotation[]
+  setlistSongs SetlistSong[]
 
   @@unique([bandId, youtubeId])
+}
+
+model Setlist {
+  id        String   @id @default(cuid())
+  bandId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  band         Band          @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  setlistSongs SetlistSong[]
+
+  @@unique([bandId, name])
+}
+
+model SetlistSong {
+  id        String @id @default(cuid())
+  setlistId String
+  songId    String
+  order     Int    @default(0) // for ordering songs within setlist
+
+  setlist Setlist @relation(fields: [setlistId], references: [id], onDelete: Cascade)
+  song    Song    @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([setlistId, songId])
 }
 
 model Annotation {

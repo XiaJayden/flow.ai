@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { parseInstruments } from "@/lib/utils";
 import { BandHeader } from "@/components/bands/band-header";
-import { SongsList } from "@/components/songs/songs-list";
+import { SongModule } from "@/components/songs/song-module";
 import { BandMembers } from "@/components/bands/band-members";
 
 interface BandPageProps {
@@ -54,6 +54,18 @@ export default async function BandPage({ params }: BandPageProps) {
               addedAt: 'desc'
             }
           },
+          setlists: {
+            include: {
+              _count: {
+                select: {
+                  setlistSongs: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'asc'
+            }
+          },
           _count: {
             select: {
               members: true,
@@ -97,17 +109,22 @@ export default async function BandPage({ params }: BandPageProps) {
     <div className="container mx-auto px-4 py-8">
       <BandHeader band={bandWithInstruments} userRole={userRole} />
       
-      <div className="grid gap-8 md:grid-cols-3 mt-8">
-        <div className="md:col-span-2">
-          <SongsList 
+      <div className="flex gap-4 mt-4">
+        <div className="w-[65%]">
+          <SongModule 
             bandId={band.id} 
             songs={band.songs} 
+            setlists={band.setlists.map(setlist => ({
+              id: setlist.id,
+              name: setlist.name,
+              songCount: setlist._count.setlistSongs
+            }))}
             canAddSongs={userRole === 'admin' || userRole === 'member'}
             availableInstruments={allBandInstruments}
           />
         </div>
         
-        <div>
+        <div className="w-[35%]">
           <BandMembers 
             members={membersWithInstruments} 
             userRole={userRole}

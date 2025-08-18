@@ -49,12 +49,6 @@ export function BandMembers({ members, userRole, bandId }: BandMembersProps) {
                 <p className="text-sm font-medium truncate">
                   {member.user.name || member.user.username}
                 </p>
-                <Badge 
-                  variant={member.role === 'admin' ? 'default' : 'secondary'}
-                  className="text-xs"
-                >
-                  {member.role}
-                </Badge>
               </div>
               
               {member.user.instruments.length > 0 && (
