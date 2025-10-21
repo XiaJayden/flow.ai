@@ -1,43 +1,21 @@
-import { getServerSession } from "next-auth";
+import { getAuthenticatedUser, getUserBands } from "@/lib/auth-utils";
 import { headers } from "next/headers";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Navbar } from "./navbar";
 
 export async function NavbarWrapper() {
-  const session = await getServerSession(authOptions);
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') || '';
   
   let bands: any[] = [];
   let currentSong: any = null;
   
-  if (session) {
-    // Get user's bands
-    const userBands = await db.bandMember.findMany({
-      where: { userId: session.user.id },
-      include: {
-        band: {
-          include: {
-            _count: {
-              select: {
-                members: true,
-                songs: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        joinedAt: 'desc'
-      }
-    });
-
-    bands = userBands.map(membership => ({
-      ...membership.band,
-      role: membership.role,
-      joinedAt: membership.joinedAt
-    }));
+  // Use robust authentication check (non-blocking)
+  const user = await getAuthenticatedUser(false);
+  
+  if (user) {
+    // Get user's bands with proper error handling
+    bands = await getUserBands(user.id);
 
     // Check if we're on a song practice page and get song data
     const songMatch = pathname.match(/^\/bands\/([^\/]+)\/songs\/([^\/]+)$/);

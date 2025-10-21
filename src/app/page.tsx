@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-utils";
 
 export default async function HomePage() {
-  const session = await getServerSession(authOptions);
+  // Use robust authentication check
+  const user = await getAuthenticatedUser(false);
   
-  if (session) {
+  if (user) {
     redirect("/dashboard");
   } else {
     redirect("/auth/signin");

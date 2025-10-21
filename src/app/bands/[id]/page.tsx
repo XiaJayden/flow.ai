@@ -9,6 +9,7 @@ import { SongModule } from "@/components/songs/song-module";
 import { AnnouncementsModule } from "@/components/announcements/announcements-module";
 import { PracticeSchedulerModule } from "@/components/practice/practice-scheduler-module";
 import { BandAvatarsModule } from "@/components/avatars/band-avatars-module";
+import { TempImageBar } from "@/components/bands/temp-image-bar";
 
 interface BandPageProps {
   params: Promise<{
@@ -202,11 +203,9 @@ export default async function BandPage({ params }: BandPageProps) {
             />
           </div>
           
-          {/* Band Avatars Module - 20% */}
+          {/* Temp Image Bar - 20% */}
           <div className="h-[20vh]">
-            <BandAvatarsModule 
-              members={membersWithInstruments}
-            />
+            <TempImageBar />
           </div>
         </div>
       </div>

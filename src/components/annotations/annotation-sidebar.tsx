@@ -250,7 +250,8 @@ export function AnnotationSidebar({
             {filteredAnnotations.map(annotation => (
               <div 
                 key={annotation.id} 
-                className="border rounded-lg p-3 hover:bg-muted/50"
+                className="border rounded-lg p-3 hover:bg-muted/50 cursor-pointer transition-colors hover:border-primary/50 hover:shadow-sm"
+                onClick={() => onSeekToTime(annotation.timestamp)}
                 ref={(el) => {
                   if (el) {
                     annotationRefs.current.set(annotation.id, el);
@@ -272,7 +273,10 @@ export function AnnotationSidebar({
                       variant="ghost"
                       size="sm"
                       className="h-6 px-2 text-xs text-primary hover:text-primary"
-                      onClick={() => onSeekToTime(annotation.timestamp)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSeekToTime(annotation.timestamp);
+                      }}
                     >
                       {formatTime(annotation.timestamp)}
                     </Button>
@@ -290,7 +294,8 @@ export function AnnotationSidebar({
                               backgroundColor: color,
                               borderColor: color
                             }}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               if (onInstrumentColorChange) {
                                 setColorPickerVisible(isColorPickerOpen ? null : instrument);
                               }
@@ -301,14 +306,18 @@ export function AnnotationSidebar({
                           
                           {/* Color Picker Popup */}
                           {isColorPickerOpen && onInstrumentColorChange && (
-                            <div className="absolute top-full left-0 mt-1 bg-popover border rounded-md shadow-lg p-2 z-50">
+                            <div 
+                              className="absolute top-full left-0 mt-1 bg-popover border rounded-md shadow-lg p-2 z-50"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <div className="grid grid-cols-6 gap-1">
                                 {COLOR_OPTIONS.slice(0, 18).map(colorOption => (
                                   <button
                                     key={colorOption}
                                     className="w-6 h-6 rounded border border-background/20 hover:scale-110 transition-transform"
                                     style={{ backgroundColor: colorOption }}
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       onInstrumentColorChange(instrument, colorOption);
                                       setColorPickerVisible(null);
                                     }}
@@ -336,7 +345,10 @@ export function AnnotationSidebar({
                       variant="ghost"
                       size="sm"
                       className="h-6 px-2 text-xs"
-                      onClick={() => toggleAnnotationExpanded(annotation.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleAnnotationExpanded(annotation.id);
+                      }}
                     >
                       <MessageSquare className="h-3 w-3 mr-1" />
                       {annotation._count.comments} {annotation._count.comments === 1 ? 'reply' : 'replies'}
@@ -346,7 +358,10 @@ export function AnnotationSidebar({
 
                 {/* Comment Thread */}
                 {(expandedAnnotations.has(annotation.id) || annotation._count?.comments === 0) && (
-                  <div className="mt-3 pt-3 border-t">
+                  <div 
+                    className="mt-3 pt-3 border-t"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <CommentThread
                       annotationId={annotation.id}
                       comments={annotation.comments || []}

@@ -1,45 +1,15 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { parseInstruments } from "@/lib/utils";
+import { getAuthenticatedUser, getUserBands } from "@/lib/auth-utils";
 import { SongPriorityWidget } from "@/components/dashboard/song-priority-widget";
 import { BandActivityWidget } from "@/components/dashboard/band-activity-widget";
 import { CalendarWidget } from "@/components/dashboard/calendar-widget";
 import { RecordWidget } from "@/components/dashboard/record-widget";
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+  // Use robust authentication check
+  const user = await getAuthenticatedUser(true);
   
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
-  // Get user's bands
-  const userBands = await db.bandMember.findMany({
-    where: { userId: session.user.id },
-    include: {
-      band: {
-        include: {
-          _count: {
-            select: {
-              members: true,
-              songs: true
-            }
-          }
-        }
-      }
-    },
-    orderBy: {
-      joinedAt: 'desc'
-    }
-  });
-
-  const bands = userBands.map(membership => ({
-    ...membership.band,
-    role: membership.role,
-    joinedAt: membership.joinedAt
-  }));
+  // Get user's bands with proper error handling
+  const bands = await getUserBands(user.id);
 
   return (
     <div className="container mx-auto px-4 py-8">
