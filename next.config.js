@@ -1,5 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Security headers to allow fullscreen
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'fullscreen=(self)'
+          }
+        ],
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {

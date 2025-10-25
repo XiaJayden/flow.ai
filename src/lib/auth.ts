@@ -46,6 +46,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             username: user.username,
             name: user.name,
+            instruments: user.instruments,
           }
         } catch (error) {
           console.error('Authentication error:', error)
@@ -64,20 +65,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // Only fetch user data on initial login, not on every token refresh
         token.username = user.username
-        // Fetch fresh user data including instruments
-        try {
-          const dbUser = await db.user.findUnique({
-            where: { id: user.id }
-          })
-          if (dbUser) {
-            token.instruments = dbUser.instruments
-            token.email = dbUser.email
-            token.name = dbUser.name
-          }
-        } catch (error) {
-          console.error('Error fetching user data in JWT callback:', error)
-        }
+        token.email = user.email
+        token.name = user.name
+        token.instruments = (user as any).instruments || '[]'
       }
       return token
     },

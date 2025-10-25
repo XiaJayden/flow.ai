@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -14,10 +14,34 @@ export function SignInForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [lastAttempt, setLastAttempt] = useState(0)
+  const [shouldRedirect, setShouldRedirect] = useState(false)
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Handle redirect after successful login
+  useEffect(() => {
+    if (shouldRedirect && status === 'authenticated' && session?.user) {
+      console.log('Session established, redirecting to dashboard')
+      // Add a small delay to ensure session is fully propagated
+      setTimeout(() => {
+        router.push('/dashboard')
+        router.refresh() // Force a refresh to ensure server-side data is synced
+      }, 200)
+    }
+  }, [shouldRedirect, status, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Prevent rapid-fire login attempts
+    const now = Date.now()
+    if (now - lastAttempt < 1000) {
+      setError('Please wait a moment before trying again')
+      return
+    }
+    setLastAttempt(now)
+    
     setLoading(true)
     setError('')
 
@@ -29,12 +53,18 @@ export function SignInForm() {
       })
 
       if (result?.error) {
+        console.error('Sign in error:', result.error)
         setError('Invalid email/username or password')
+      } else if (result?.ok) {
+        console.log('Sign in successful, waiting for session to establish...')
+        setShouldRedirect(true)
       } else {
-        router.push('/dashboard')
+        console.warn('Unexpected sign in result:', result)
+        setError('Login failed. Please try again.')
       }
     } catch (error) {
-      setError('Something went wrong')
+      console.error('Sign in exception:', error)
+      setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }

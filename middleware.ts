@@ -6,12 +6,21 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', request.nextUrl.pathname)
 
-  // Return the response with the modified headers
-  return NextResponse.next({
+  // Create response with fullscreen permissions policy headers
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   })
+
+  // Add fullscreen permissions policy headers
+  response.headers.set('Permissions-Policy', 'fullscreen=(self)')
+  
+  // Additional security headers for better fullscreen support
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+
+  return response
 }
 
 export const config = {

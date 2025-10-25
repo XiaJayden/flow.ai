@@ -85,6 +85,8 @@ export async function isAuthenticated(): Promise<boolean> {
  */
 export async function getUserBands(userId: string) {
   try {
+    console.log(`Fetching bands for user: ${userId}`)
+    
     const userBands = await db.bandMember.findMany({
       where: { userId },
       include: {
@@ -104,11 +106,17 @@ export async function getUserBands(userId: string) {
       }
     })
 
-    return userBands.map(membership => ({
+    console.log(`Found ${userBands.length} band memberships for user ${userId}`)
+    
+    const bands = userBands.map(membership => ({
       ...membership.band,
       role: membership.role,
       joinedAt: membership.joinedAt
     }))
+    
+    console.log('Processed bands:', bands.map(b => ({ id: b.id, name: b.name, role: b.role })))
+    
+    return bands
   } catch (error) {
     console.error('Failed to fetch user bands:', error)
     return []

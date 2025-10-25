@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,22 @@ interface BandsListProps {
 export function BandsList({ bands }: BandsListProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const { data: session, status } = useSession();
+
+  // Ensure we're on the client side and session is ready
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Don't render until client-side hydration is complete and session is ready
+  if (!isClient || status === 'loading') {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-muted-foreground">Loading bands...</div>
+      </div>
+    );
+  }
 
   return (
     <>
